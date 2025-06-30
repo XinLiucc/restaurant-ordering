@@ -244,10 +244,9 @@ async function startServer() {
     console.log('✅ 数据库连接成功');
     
     // 同步数据库模型（开发环境）
-    if (process.env.NODE_ENV === 'development') {
-      await sequelize.sync({ alter: true });
-      console.log('✅ 数据库模型同步完成');
-    }
+  if (process.env.NODE_ENV === 'development' && process.env.AUTO_SYNC === 'true') {
+    await sequelize.sync({ alter: false }); // ✅ 安全
+  }
     
     // 启动服务器
     app.listen(PORT, '0.0.0.0', () => {
