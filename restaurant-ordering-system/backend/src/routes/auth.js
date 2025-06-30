@@ -11,6 +11,8 @@ router.get('/check', AuthController.checkAuth);
 // 开发环境路由
 if (process.env.NODE_ENV === 'development') {
   router.post('/mock-wechat-login', AuthController.mockWechatLogin);
+  router.get('/test-users', AuthController.getTestUsers);
+  router.delete('/test-users', auth.requireAdmin, AuthController.cleanTestUsers);
 }
 
 // 管理功能
