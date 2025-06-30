@@ -9,7 +9,10 @@ require('dotenv').config();
 
 // 导入配置
 const sessionConfig = require('./config/session');
-const { sequelize } = require('./models');
+// const { sequelize } = require('./models');
+const { sequelize, testConnection, syncDatabase } = require('./config/database');
+const { errorHandler, notFound } = require('./middleware/error');
+const { ensureUploadDir } = require('./middleware/upload');
 
 // 导入路由
 const authRoutes = require('./routes/auth');
@@ -21,11 +24,24 @@ const notificationRoutes = require('./routes/notification');
 const uploadRoutes = require('./routes/upload');
 
 // 导入中间件
-const { errorHandler } = require('./middleware/error');
 const { validateRequest } = require('./middleware/validation');
 
+// 创建Express应用
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// ===== 静态文件服务 =====
+
+// 确保上传目录存在
+ensureUploadDir(path.join(__dirname, 'uploads/images'));
+
+// 静态文件服务
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  maxAge: '7d', // 缓存7天
+  etag: true,
+  lastModified: true
+}));
+
 
 // ===== 基础中间件配置 =====
 
@@ -101,6 +117,17 @@ const authLimiter = rateLimit({
 
 app.use(globalLimiter);
 
+// 上传接口限流
+const uploadLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1分钟
+  max: 10, // 每分钟最多10次上传
+  message: {
+    success: false,
+    message: '上传频率过高，请稍后再试',
+    code: 'UPLOAD_RATE_EXCEEDED'
+  }
+});
+
 // 开发环境跳过速率限制
 if (process.env.NODE_ENV !== 'development') {
   app.use('/api/auth', authLimiter);
@@ -172,8 +199,7 @@ app.get('/api/health', (req, res) => {
 
 // ===== API路由挂载 =====
 app.use('/api/auth', authRoutes);
-app.use('/api/categories', menuRoutes.categories);
-app.use('/api/dishes', menuRoutes.dishes);
+app.use('/api/menu', menuRoutes);
 app.use('/api/cart', orderRoutes.cart);
 app.use('/api/orders', orderRoutes.orders);
 app.use('/api/payments', paymentRoutes);
