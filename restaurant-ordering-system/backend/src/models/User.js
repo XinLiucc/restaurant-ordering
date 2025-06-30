@@ -1,3 +1,5 @@
+// models/User.js - 优化后的用户模型（减少索引数量）
+
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define('User', {
     id: {
@@ -8,13 +10,13 @@ module.exports = (sequelize, DataTypes) => {
     openid: {
       type: DataTypes.STRING(100),
       allowNull: false,
-      unique: true,
+      unique: 'unique_openid', // 使用命名的唯一索引
       comment: '微信openid'
     },
     username: {
       type: DataTypes.STRING(50),
       allowNull: true,
-      unique: true,
+      unique: 'unique_username', // 使用命名的唯一索引
       comment: '管理员用户名（仅管理员使用）'
     },
     password: {
@@ -51,12 +53,31 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     tableName: 'users',
     underscored: true,
+    // 🔧 优化索引定义 - 只保留必要的索引
     indexes: [
-      { unique: true, fields: ['openid'] },
-      { unique: true, fields: ['username'], where: { username: { [sequelize.Sequelize.Op.ne]: null } } },
-      { fields: ['phone'] },
-      { fields: ['role'] },
-      { fields: ['status'] }
+      {
+        unique: true,
+        fields: ['openid'],
+        name: 'idx_users_openid_unique'
+      },
+      {
+        unique: true,
+        fields: ['username'],
+        name: 'idx_users_username_unique',
+        where: {
+          username: {
+            [sequelize.Sequelize.Op.ne]: null
+          }
+        }
+      },
+      {
+        fields: ['role', 'status'], // 组合索引，减少索引数量
+        name: 'idx_users_role_status'
+      },
+      {
+        fields: ['phone'],
+        name: 'idx_users_phone'
+      }
     ],
     hooks: {
       // 密码加密钩子

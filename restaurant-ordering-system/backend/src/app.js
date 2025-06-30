@@ -169,7 +169,21 @@ const sessionOptions = {
   name: 'restaurant.sid'
 };
 
+// 使用MySQL session存储
 app.use(session(sessionOptions));
+
+// 使用Express-session中间件
+app.use(session({
+  key: 'restaurant_session',
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000, // 24小时
+    httpOnly: true
+  },
+  rolling: true
+}));
 
 // ===== 请求日志中间件 =====
 app.use((req, res, next) => {
