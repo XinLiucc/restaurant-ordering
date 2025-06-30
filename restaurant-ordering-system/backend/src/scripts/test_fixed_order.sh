@@ -32,7 +32,7 @@ echo ""
 echo "🛒 步骤3: 添加菜品4到购物车"
 add_response=$(curl -s -X POST ${BASE_URL}/cart/add \
   -H 'Content-Type: application/json' \
-  -d '{"dishId": 4, "quantity": 2}' \
+  -d '{"dishId": 5, "quantity": 5}' \
   -b cookies.txt)
 
 echo "添加菜品响应: $add_response"
