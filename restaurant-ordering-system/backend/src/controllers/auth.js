@@ -1,4 +1,5 @@
 const { User } = require('../models');
+const { Op } = require('sequelize');
 const WechatUtil = require('../utils/wechat');
 const { success, error, unauthorized, forbidden, created } = require('../utils/response');
 const { CustomError, asyncHandler } = require('../middleware/error');
@@ -248,27 +249,88 @@ class AuthController {
       return error(res, '获取管理员列表失败', 500);
     }
   });
-
   /**
-   * 模拟微信登录（开发测试用）
+   * 模拟微信登录（开发测试用）- 增强版
+   * POST /api/auth/mock-wechat-login
+   * 
+   * Body参数：
+   * - mode: 'create' | 'login' | 'auto' (默认auto)
+   * - nickName: string (创建新用户时必填)
+   * - avatar: string (可选)
+   * - userId: number (登录已存在用户时使用)
+   * - phone: string (可选)
    */
   mockWechatLogin = asyncHandler(async (req, res) => {
     if (process.env.NODE_ENV === 'production') {
       return error(res, '生产环境不支持模拟登录', 403);
     }
 
-    const { nickName, avatar } = req.body;
-    const mockOpenid = 'mock_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    const { 
+      mode = 'auto', 
+      nickName, 
+      avatar, 
+      userId, 
+      phone 
+    } = req.body;
+
+    if (!['create', 'login', 'auto'].includes(mode)) {
+      return error(res, '模式参数无效，应为 create、login 或 auto', 400, 'INVALID_MODE');
+    }
 
     try {
-      const user = await User.create({
-        openid: mockOpenid,
-        nickName: nickName || '测试用户',
-        avatar: avatar || '',
-        role: 'customer',
-        status: 'active'
-      });
+      let user = null;
 
+      switch (mode) {
+        case 'create':
+          // 强制创建新用户
+          if (!nickName) {
+            return error(res, '创建新用户时昵称不能为空', 400, 'MISSING_NICKNAME');
+          }
+          
+          user = await this.createMockUser(nickName, avatar, phone);
+          console.log('✅ 创建新的模拟用户:', user.id, user.nickName);
+          break;
+
+        case 'login':
+          // 登录已存在的用户
+          if (!userId) {
+            return error(res, '登录模式下用户ID不能为空', 400, 'MISSING_USER_ID');
+          }
+          
+          user = await User.findByPk(userId);
+          if (!user) {
+            return error(res, '指定的用户不存在', 404, 'USER_NOT_FOUND');
+          }
+          
+          if (user.role !== 'customer') {
+            return error(res, '只能登录普通用户账户', 400, 'INVALID_USER_ROLE');
+          }
+          
+          console.log('✅ 登录已存在用户:', user.id, user.nickName);
+          break;
+
+        case 'auto':
+        default:
+          // 自动模式：优先使用最近的用户，如果没有则创建新用户
+          const recentUser = await User.findOne({
+            where: { role: 'customer' },
+            order: [['createdAt', 'DESC']]
+          });
+
+          if (recentUser && !nickName) {
+            // 使用最近的用户
+            user = recentUser;
+            console.log('✅ 自动登录最近用户:', user.id, user.nickName);
+          } else {
+            // 创建新用户
+            const displayName = nickName || `测试用户${Date.now().toString().slice(-4)}`;
+            user = await this.createMockUser(displayName, avatar, phone);
+            console.log('✅ 自动创建新用户:', user.id, user.nickName);
+          }
+          break;
+      }
+
+      // 设置Session
       req.session.user = {
         id: user.id,
         openid: user.openid,
@@ -280,12 +342,116 @@ class AuthController {
 
       return success(res, {
         user: user.toSafeJSON(),
-        sessionId: req.sessionID
-      }, '模拟微信登录成功');
+        sessionId: req.sessionID,
+        mode: mode,
+        isNewUser: mode === 'create' || (mode === 'auto' && nickName)
+      }, `模拟微信登录成功 (${mode}模式)`);
 
     } catch (err) {
       console.error('❌ 模拟登录失败:', err);
       return error(res, '模拟登录失败', 500);
+    }
+  });
+
+  /**
+   * 创建模拟用户的辅助方法
+   */
+  async createMockUser(nickName, avatar, phone) {
+    const mockOpenid = 'mock_' + Date.now() + '_' + Math.random().toString(36).substring(7);
+    
+    return await User.create({
+      openid: mockOpenid,
+      nickName: nickName.trim(),
+      avatar: avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(nickName)}&background=random`,
+      phone: phone || null,
+      role: 'customer',
+      status: 'active'
+    });
+  }
+
+    /**
+   * 获取测试用户列表（开发环境）
+   * GET /api/auth/test-users
+   */
+  getTestUsers = asyncHandler(async (req, res) => {
+    if (process.env.NODE_ENV === 'production') {
+      return error(res, '生产环境不支持此功能', 403);
+    }
+    try {
+      const testUsers = await User.findAll({
+        where: { 
+          role: 'customer',
+          openid: { [Op.like]: 'mock_%' }
+        },
+        attributes: ['id', 'nickName', 'avatar', 'phone', 'createdAt'],
+        order: [['createdAt', 'DESC']],
+        limit: 20
+      });
+
+      return success(res, {
+        users: testUsers,
+        total: testUsers.length,
+        tip: '这些是模拟创建的测试用户，可以在mock-wechat-login接口中使用userId参数登录'
+      }, '获取测试用户列表成功');
+
+    } catch (err) {
+      console.error('获取测试用户列表失败:', err);
+      return error(res, '获取测试用户列表失败', 500);
+    }
+  });
+
+    /**
+   * 清理测试用户（开发环境）
+   * DELETE /api/auth/test-users
+   */
+  cleanTestUsers = asyncHandler(async (req, res) => {
+    if (process.env.NODE_ENV === 'production') {
+      return error(res, '生产环境不支持此功能', 403);
+    }
+
+    const { keepRecent = 5 } = req.body;
+
+    try {
+      // 保留最近的几个用户，删除其他测试用户
+      const allTestUsers = await User.findAll({
+        where: { 
+          role: 'customer',
+          openid: { [Op.like]: 'mock_%' }
+        },
+        order: [['createdAt', 'DESC']]
+      });
+
+      if (allTestUsers.length <= keepRecent) {
+        return success(res, {
+          deletedCount: 0,
+          remainingCount: allTestUsers.length,
+          message: '测试用户数量未超过保留数量'
+        }, '无需清理测试用户');
+      }
+
+      const usersToDelete = allTestUsers.slice(keepRecent);
+      const userIdsToDelete = usersToDelete.map(user => user.id);
+
+      // 删除用户（关联的订单等数据会根据外键设置处理）
+      const deletedCount = await User.destroy({
+        where: { id: userIdsToDelete }
+      });
+
+      console.log(`🧹 清理了 ${deletedCount} 个测试用户`);
+
+      return success(res, {
+        deletedCount,
+        remainingCount: keepRecent,
+        deletedUsers: usersToDelete.map(user => ({
+          id: user.id,
+          nickName: user.nickName,
+          createdAt: user.createdAt
+        }))
+      }, `清理测试用户成功，保留最近${keepRecent}个`);
+
+    } catch (err) {
+      console.error('清理测试用户失败:', err);
+      return error(res, '清理测试用户失败', 500);
     }
   });
 
