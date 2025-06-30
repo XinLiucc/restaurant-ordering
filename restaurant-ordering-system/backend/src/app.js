@@ -91,7 +91,7 @@ const globalLimiter = rateLimit({
 // 认证接口限制
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15分钟
-  max: 10, // 每个IP最多10次登录尝试
+  max: process.env.NODE_ENV === 'development' ? 1000 : 10, // 开发环境放宽
   message: {
     success: false,
     message: '登录尝试次数过多，请稍后再试'
@@ -100,7 +100,11 @@ const authLimiter = rateLimit({
 });
 
 app.use(globalLimiter);
-app.use('/api/auth', authLimiter);
+
+// 开发环境跳过速率限制
+if (process.env.NODE_ENV !== 'development') {
+  app.use('/api/auth', authLimiter);
+}
 
 // ===== Session配置 =====
 
