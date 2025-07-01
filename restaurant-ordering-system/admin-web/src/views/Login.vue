@@ -84,7 +84,7 @@
       </el-form>
 
       <div class="login-footer">
-        <p class="copyright">© 2024 餐厅管理平台. All rights reserved.</p>
+        <p class="copyright">© 2025 餐厅管理平台-XinLiucc </p>
       </div>
     </div>
   </div>
