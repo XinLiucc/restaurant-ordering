@@ -119,7 +119,7 @@
                   <el-button
                     type="danger"
                     link
-                    @click="handleDeleteCategoryItem(row)"
+                    @click="handleDeleteCategory(row)"
                     :icon="Delete"
                   >
                     删除
@@ -592,7 +592,7 @@ import {
   mockCategoryAPI, 
   mockDishAPI, 
   mockUploadAPI 
-} from '@/utils/demo-data'
+} from '@/utils/demo-data-menu'
 
 // 响应式数据
 const route = useRoute()
