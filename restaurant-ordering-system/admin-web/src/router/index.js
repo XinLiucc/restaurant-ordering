@@ -37,11 +37,92 @@ const routes = [
         }
       },
       {
+        path: '/menu/categories',
+        name: 'MenuCategories',
+        component: () => import('@/views/Menu.vue'),
+        meta: { 
+          title: '分类管理',
+          requiresAuth: true 
+        }
+      },
+      {
+        path: '/menu/dishes',
+        name: 'MenuDishes', 
+        component: () => import('@/views/Menu.vue'),
+        meta: { 
+          title: '菜品管理',
+          requiresAuth: true 
+        }
+      },
+      {
         path: '/orders',
         name: 'Orders', 
         component: () => import('@/views/Orders.vue'),
         meta: { 
           title: '订单管理',
+          requiresAuth: true 
+        }
+      },
+      {
+        path: '/payments',
+        name: 'Payments',
+        component: () => import('@/views/Payments.vue'),
+        meta: { 
+          title: '支付管理',
+          requiresAuth: true 
+        }
+      },
+      {
+        path: '/statistics',
+        name: 'Statistics',
+        redirect: '/statistics/sales',
+        meta: { 
+          title: '数据统计',
+          requiresAuth: true 
+        }
+      },
+      {
+        path: '/statistics/sales',
+        name: 'StatisticsSales',
+        component: () => import('@/views/Statistics/Sales.vue'),
+        meta: { 
+          title: '销售统计',
+          requiresAuth: true 
+        }
+      },
+      {
+        path: '/statistics/dishes',
+        name: 'StatisticsDishes',
+        component: () => import('@/views/Statistics/Dishes.vue'),
+        meta: { 
+          title: '菜品统计',
+          requiresAuth: true 
+        }
+      },
+      {
+        path: '/statistics/users',
+        name: 'StatisticsUsers',
+        component: () => import('@/views/Statistics/Users.vue'),
+        meta: { 
+          title: '用户统计',
+          requiresAuth: true 
+        }
+      },
+      {
+        path: '/upload',
+        name: 'Upload',
+        component: () => import('@/views/Upload.vue'),
+        meta: { 
+          title: '文件管理',
+          requiresAuth: true 
+        }
+      },
+      {
+        path: '/settings',
+        name: 'Settings',
+        component: () => import('@/views/Settings.vue'),
+        meta: { 
+          title: '系统设置',
           requiresAuth: true 
         }
       }
