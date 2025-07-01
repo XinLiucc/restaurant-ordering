@@ -1,0 +1,179 @@
+/* 全局样式重置和基础样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#app {
+  height: 100%;
+}
+
+/* Element Plus 主题定制 */
+:root {
+  --el-color-primary: #667eea;
+  --el-color-primary-light-3: #8b9df0;
+  --el-color-primary-light-5: #a8b7f3;
+  --el-color-primary-light-7: #c5d1f6;
+  --el-color-primary-light-8: #d4dcf8;
+  --el-color-primary-light-9: #e2e7fa;
+  --el-color-primary-dark-2: #5a73e8;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 工具类 */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.flex { display: flex; }
+.flex-1 { flex: 1; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+
+.mb-0 { margin-bottom: 0; }
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+.mb-4 { margin-bottom: 2rem; }
+
+.mt-0 { margin-top: 0; }
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+.mt-4 { margin-top: 2rem; }
+
+/* 卡片样式 */
+.card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #ebeef5;
+}
+
+.card-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #ebeef5;
+  font-weight: 600;
+  color: #303133;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+/* 页面布局 */
+.page-container {
+  padding: 1.5rem;
+  background: #f5f7fa;
+  min-height: 100vh;
+}
+
+.page-header {
+  margin-bottom: 1.5rem;
+}
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #303133;
+  margin-bottom: 0.5rem;
+}
+
+.page-subtitle {
+  color: #909399;
+  font-size: 0.875rem;
+}
+
+/* 表格样式增强 */
+.el-table {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+.el-table .el-table__header-wrapper {
+  background: #f8f9fa;
+}
+
+/* 按钮样式增强 */
+.el-button {
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.el-button + .el-button {
+  margin-left: 8px;
+}
+
+/* 输入框样式增强 */
+.el-input__wrapper {
+  border-radius: 8px;
+}
+
+/* 对话框样式 */
+.el-dialog {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.el-dialog__header {
+  background: #f8f9fa;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #ebeef5;
+}
+
+/* 标签样式 */
+.status-tag {
+  font-weight: 500;
+  border-radius: 6px;
+}
+
+/* 动画类 */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
+.slide-up-enter-active, .slide-up-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-up-enter-from {
+  transform: translateY(20px);
+  opacity: 0;
+}
+
+.slide-up-leave-to {
+  transform: translateY(-20px);
+  opacity: 0;
+}
